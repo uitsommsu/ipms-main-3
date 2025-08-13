@@ -3,13 +3,13 @@ services:
   - type: web
     name: ipms-web
     env: docker
-    plan: starter
+    plan: free
     dockerfilePath: ./Dockerfile
     healthCheckPath: /
     disk:
       name: ipms-storage
       mountPath: /app
-      sizeGB: 5
+      sizeGB: 1
     preDeployCommand: |
       php artisan migrate --force
       php artisan storage:link || true
@@ -50,12 +50,12 @@ services:
   - type: worker
     name: ipms-queue
     env: docker
-    plan: starter
+    plan: free
     dockerfilePath: ./Dockerfile
     disk:
       name: ipms-storage
       mountPath: /app
-      sizeGB: 5
+      sizeGB: 1
     envVars:
       - fromGroup: laravel-base
       - key: DB_HOST
@@ -93,7 +93,7 @@ services:
   - type: cron
     name: ipms-scheduler
     env: docker
-    plan: starter
+    plan: free
     dockerfilePath: ./Dockerfile
     schedule: "* * * * *"
     buildCommand: "true"
@@ -139,7 +139,7 @@ services:
 
 databases:
   - name: ipms-postgres
-    plan: basic-1gb
+    plan: free
 
 envVarGroups:
   - name: laravel-base
