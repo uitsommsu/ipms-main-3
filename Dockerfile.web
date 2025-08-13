@@ -1,3 +1,2 @@
-FROM php:8.2-fpm
-COPY --from=base / /  # Not valid unless we build a named stage, see below
+FROM base as base
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
