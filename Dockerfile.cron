@@ -1,0 +1,2 @@
+FROM base as base
+CMD ["php", "artisan", "schedule:run"]
