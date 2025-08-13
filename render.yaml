@@ -1,10 +1,47 @@
+envVarGroups:
+  - name: laravel-base
+    envVars:
+      - key: APP_NAME
+        value: IPMS
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_URL
+        value: https://your-app.onrender.com
+      - key: LOG_LEVEL
+        value: info
+      - key: CACHE_DRIVER
+        value: redis
+      - key: SESSION_DRIVER
+        value: redis
+      - key: SESSION_LIFETIME
+        value: "120"
+      - key: QUEUE_CONNECTION
+        value: redis
+      - key: BROADCAST_DRIVER
+        value: log
+      - key: FILESYSTEM_DISK
+        value: s3
+      - key: AWS_ACCESS_KEY_ID
+        value: ab886c22a078b9c5b433e2469b50ec2f
+      - key: AWS_SECRET_ACCESS_KEY
+        value: 74a45540f0e9b5d39050d5108c6ab7eef376d29ede86e4b33bff445f1648a1fc
+      - key: AWS_DEFAULT_REGION
+        value: auto
+      - key: AWS_BUCKET
+        value: ipms-storage
+      - key: AWS_ENDPOINT
+        value: https://05c655db9a1e4f836e2d0e841a7af7d7.r2.cloudflarestorage.com
+
 services:
   - type: web
     name: ipms-web
     env: docker
     plan: free
-    dockerfilePath: ./Dockerfile
-    startCommand: php artisan serve --host=0.0.0.0 --port=8000
+    dockerfilePath: ./Dockerfile.web
     envVars:
       - fromGroup: laravel-base
       - key: DB_HOST
@@ -32,8 +69,7 @@ services:
     name: ipms-queue
     env: docker
     plan: free
-    dockerfilePath: ./Dockerfile
-    startCommand: php artisan queue:work --verbose --tries=3 --timeout=90
+    dockerfilePath: ./Dockerfile.queue
     envVars:
       - fromGroup: laravel-base
       - key: DB_HOST
@@ -60,10 +96,9 @@ services:
   - type: cron
     name: ipms-scheduler
     env: docker
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: ./Dockerfile.cron
     schedule: "* * * * *"
     buildCommand: "true"
-    startCommand: php artisan schedule:run
     envVars:
       - fromGroup: laravel-base
       - key: DB_HOST
@@ -86,3 +121,7 @@ services:
         fromDatabase:
           name: ipms-postgres
           property: password
+
+databases:
+  - name: ipms-postgres
+    plan: free
