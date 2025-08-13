@@ -18,11 +18,6 @@ COPY . .
 # Install PHP dependencies
 RUN COMPOSER_MEMORY_LIMIT=-1 composer install --no-dev --optimize-autoloader
 
-# Install Node.js & build frontend
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs \
-    && npm install && npm run build
-
 # Cache Laravel config, routes, and views
 RUN php artisan config:cache && \
     php artisan route:cache && \
