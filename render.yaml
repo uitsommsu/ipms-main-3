@@ -15,12 +15,26 @@ services:
       php artisan storage:link || true
     envVars:
       - fromGroup: laravel-base
-      - key: DATABASE_URL
+      - key: DB_HOST
         fromDatabase:
           name: ipms-postgres
-          property: internalConnectionString
-      - key: DB_CONNECTION
-        value: pgsql
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: ipms-postgres
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: ipms-postgres
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: ipms-postgres
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: ipms-postgres
+          property: password
       - key: REDIS_HOST
         fromService:
           type: keyvalue
@@ -44,12 +58,26 @@ services:
       sizeGB: 5
     envVars:
       - fromGroup: laravel-base
-      - key: DATABASE_URL
+      - key: DB_HOST
         fromDatabase:
           name: ipms-postgres
-          property: internalConnectionString
-      - key: DB_CONNECTION
-        value: pgsql
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: ipms-postgres
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: ipms-postgres
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: ipms-postgres
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: ipms-postgres
+          property: password
       - key: REDIS_HOST
         fromService:
           type: keyvalue
@@ -60,7 +88,6 @@ services:
           type: keyvalue
           name: ipms-redis
           property: port
-    startCommand: php artisan queue:work --sleep=3 --tries=3 --timeout=90
 
   # --- Scheduler ---
   - type: cron
@@ -70,18 +97,28 @@ services:
     dockerfilePath: ./Dockerfile
     schedule: "* * * * *"
     buildCommand: "true"
-    disk:
-      name: ipms-storage
-      mountPath: /app
-      sizeGB: 5
     envVars:
       - fromGroup: laravel-base
-      - key: DATABASE_URL
+      - key: DB_HOST
         fromDatabase:
           name: ipms-postgres
-          property: internalConnectionString
-      - key: DB_CONNECTION
-        value: pgsql
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: ipms-postgres
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: ipms-postgres
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: ipms-postgres
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: ipms-postgres
+          property: password
       - key: REDIS_HOST
         fromService:
           type: keyvalue
@@ -92,13 +129,13 @@ services:
           type: keyvalue
           name: ipms-redis
           property: port
-    startCommand: php artisan schedule:run
 
   # --- Redis ---
   - type: keyvalue
     name: ipms-redis
     plan: free
     maxmemoryPolicy: allkeys-lru
+    ipAllowList: [] # Allow all by default
 
 databases:
   - name: ipms-postgres
