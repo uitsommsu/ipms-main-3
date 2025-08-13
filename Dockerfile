@@ -11,14 +11,11 @@ COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy composer files first (for caching)
-COPY composer.json composer.lock ./
-
-# Install PHP dependencies (no dev, optimize autoloader)
-RUN COMPOSER_MEMORY_LIMIT=-1 composer install --no-dev --optimize-autoloader
-
-# Copy all application files
+# Copy ALL application files before composer install
 COPY . .
+
+# Install PHP dependencies
+RUN COMPOSER_MEMORY_LIMIT=-1 composer install --no-dev --optimize-autoloader
 
 # Install Node.js & build frontend
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
