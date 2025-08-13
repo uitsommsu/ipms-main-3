@@ -2,8 +2,10 @@ FROM php:8.2-fpm
 
 # Install system dependencies & PHP extensions
 RUN apt-get update && apt-get install -y \
-    git curl libpng-dev libjpeg-dev libfreetype6-dev zip unzip libonig-dev libxml2-dev libpq-dev supervisor \
-    && docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd
+    git curl libpng-dev libjpeg-dev libfreetype6-dev zip unzip libonig-dev libxml2-dev libpq-dev libicu-dev supervisor \
+    && docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd intl \
+    && docker-php-ext-configure intl \
+    && docker-php-ext-install zip
 
 # Install Composer
 COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
