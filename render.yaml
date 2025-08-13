@@ -1,18 +1,11 @@
 services:
-  # --- Web (Laravel) ---
+  # Laravel Web Service
   - type: web
     name: ipms-web
     env: docker
     plan: free
     dockerfilePath: ./Dockerfile
     healthCheckPath: /
-    disk:
-      name: ipms-storage
-      mountPath: /app
-      sizeGB: 1
-    preDeployCommand: |
-      php artisan migrate --force
-      php artisan storage:link || true
     envVars:
       - fromGroup: laravel-base
       - key: DB_HOST
@@ -35,27 +28,13 @@ services:
         fromDatabase:
           name: ipms-postgres
           property: password
-      - key: REDIS_HOST
-        fromService:
-          type: keyvalue
-          name: ipms-redis
-          property: host
-      - key: REDIS_PORT
-        fromService:
-          type: keyvalue
-          name: ipms-redis
-          property: port
 
-  # --- Queue worker ---
+  # Laravel Queue Worker
   - type: worker
     name: ipms-queue
     env: docker
     plan: free
     dockerfilePath: ./Dockerfile
-    disk:
-      name: ipms-storage
-      mountPath: /app
-      sizeGB: 1
     envVars:
       - fromGroup: laravel-base
       - key: DB_HOST
@@ -78,95 +57,5 @@ services:
         fromDatabase:
           name: ipms-postgres
           property: password
-      - key: REDIS_HOST
-        fromService:
-          type: keyvalue
-          name: ipms-redis
-          property: host
-      - key: REDIS_PORT
-        fromService:
-          type: keyvalue
-          name: ipms-redis
-          property: port
 
-  # --- Scheduler ---
-  - type: cron
-    name: ipms-scheduler
-    env: docker
-    plan: free
-    dockerfilePath: ./Dockerfile
-    schedule: "* * * * *"
-    buildCommand: "true"
-    envVars:
-      - fromGroup: laravel-base
-      - key: DB_HOST
-        fromDatabase:
-          name: ipms-postgres
-          property: host
-      - key: DB_PORT
-        fromDatabase:
-          name: ipms-postgres
-          property: port
-      - key: DB_DATABASE
-        fromDatabase:
-          name: ipms-postgres
-          property: database
-      - key: DB_USERNAME
-        fromDatabase:
-          name: ipms-postgres
-          property: user
-      - key: DB_PASSWORD
-        fromDatabase:
-          name: ipms-postgres
-          property: password
-      - key: REDIS_HOST
-        fromService:
-          type: keyvalue
-          name: ipms-redis
-          property: host
-      - key: REDIS_PORT
-        fromService:
-          type: keyvalue
-          name: ipms-redis
-          property: port
-
-  # --- Redis ---
-  - type: keyvalue
-    name: ipms-redis
-    plan: free
-    maxmemoryPolicy: allkeys-lru
-    ipAllowList: [] # Allow all by default
-
-databases:
-  - name: ipms-postgres
-    plan: free
-
-envVarGroups:
-  - name: laravel-base
-    envVars:
-      - key: APP_NAME
-        value: IPMS
-      - key: APP_ENV
-        value: production
-      - key: APP_DEBUG
-        value: false
-      - key: APP_KEY
-        generateValue: true
-      - key: APP_URL
-        value: https://your-app.onrender.com
-      - key: LOG_LEVEL
-        value: info
-      - key: CACHE_DRIVER
-        value: redis
-      - key: SESSION_DRIVER
-        value: redis
-      - key: SESSION_LIFETIME
-        value: "120"
-      - key: QUEUE_CONNECTION
-        value: redis
-      - key: BROADCAST_DRIVER
-        value: log
-      - key: FILESYSTEM_DISK
-        value: public
-      - key: VITE_APP_NAME
-        value: IPMS
+  # Laravel Scheduler
