@@ -1,25 +1,26 @@
-# Render Blueprint for a Laravel 11 app (Web + Worker + Cron + Postgres + Key-Value)
-# Docs: Blueprint spec, Cron jobs, Key-Value service. 
-# After pushing, choose "New → Blueprint" in Render and select this repo.
-
 services:
   # --- Web (Laravel) ---
   - type: web
     name: ipms-web
-    runtime: docker
+    env: docker
     plan: starter
     dockerfilePath: ./Dockerfile
     healthCheckPath: /
+    disk:
+      name: ipms-storage
+      mountPath: /app/storage
+      sizeGB: 5
+    preDeployCommand: |
+      php artisan storage:link || true
+      php artisan migrate --force
     envVars:
       - fromGroup: laravel-base
-      # Use a single DATABASE_URL (internal) so Laravel connects to Postgres.
       - key: DATABASE_URL
         fromDatabase:
           name: ipms-postgres
           property: internalConnectionString
       - key: DB_CONNECTION
         value: pgsql
-      # Redis-compatible Key-Value for cache/session/queues
       - key: REDIS_HOST
         fromService:
           type: keyvalue
@@ -30,21 +31,11 @@ services:
           type: keyvalue
           name: ipms-redis
           property: port
-    disk:
-      name: ipms-storage
-      mountPath: /app/storage
-      sizeGB: 5
-    preDeployCommand: |
-      php artisan storage:link || true
-      php artisan migrate --force
-      php artisan config:cache
-      php artisan route:cache
-      php artisan view:cache
 
   # --- Queue worker ---
   - type: worker
     name: ipms-queue
-    runtime: docker
+    env: docker
     plan: starter
     dockerfilePath: ./Dockerfile
     envVars:
@@ -67,10 +58,10 @@ services:
           property: port
     startCommand: php artisan queue:work --sleep=3 --tries=3 --timeout=90
 
-  # --- Scheduler (runs every minute) ---
+  # --- Scheduler ---
   - type: cron
     name: ipms-scheduler
-    runtime: docker
+    env: docker
     plan: starter
     dockerfilePath: ./Dockerfile
     schedule: "* * * * *"
@@ -95,7 +86,7 @@ services:
           property: port
     startCommand: php artisan schedule:run
 
-  # --- Redis-compatible cache/session/queue (Render Key Value) ---
+  # --- Redis ---
   - type: keyvalue
     name: ipms-redis
     plan: free
@@ -116,7 +107,6 @@ envVarGroups:
         value: false
       - key: APP_KEY
         generateValue: true
-      # Set this to your Render URL or custom domain (update after you add a domain)
       - key: APP_URL
         value: https://your-app.onrender.com
       - key: LOG_LEVEL
